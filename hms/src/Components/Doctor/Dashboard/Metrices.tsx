@@ -1,0 +1,54 @@
+import { AreaChart } from "@mantine/charts";
+import { useEffect, useState } from "react";
+import { countAppointmentsByDoctor } from "../../../Service/AppointmentService";
+import { useSelector } from "react-redux";
+import { addZeroMonths } from "../../../Utility/OtherUtility";
+
+const Metrices = () => {
+
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const user = useSelector((state: any) => state.user);
+
+  useEffect(() => {
+    countAppointmentsByDoctor(user.profileId).then((res) => {
+      setAppointments(addZeroMonths(res, "month", "count"));
+    }).catch((err) => {
+      console.log("Error fetching appointments", err);
+    });
+  }, []);
+
+  const getSum = (data: any[], key: string) => {
+    return data.reduce((sum: number, item: any) => sum + item[key], 0);
+  };
+
+  return (
+    <div className="bg-violet-50 rounded-xl border ">
+      <div className="flex justify-between items-center p-5">
+        <div>
+          <div className="font-semibold">Appointments</div>
+          <div className="text-xs text-gray-500">{new Date().getFullYear()}</div>
+        </div>
+        <div className="text-3xl font-bold text-violet-500">
+          {getSum(appointments, "count")}
+        </div>
+      </div>
+      <AreaChart
+        h={100}
+        data={appointments}
+        dataKey="month"
+        series={[{ name: "count", color: "violet" }]}
+        strokeWidth={5}
+        withGradient
+        fillOpacity={0.7}
+        curveType="bump"
+        tickLine="none"
+        gridAxis="none"
+        withXAxis={false}
+        withYAxis={false}
+        withDots={false}
+      />
+    </div>
+  );
+};
+
+export default Metrices;
